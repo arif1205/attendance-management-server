@@ -1,7 +1,7 @@
 const { Schema, model } = require("mongoose");
 
 const studentAttendanceSchema = new Schema({
-	createdAt: Date,
+	createdAt: { type: Date, default: Date.now },
 	user: {
 		type: Schema.Types.ObjectId,
 		ref: "User",
