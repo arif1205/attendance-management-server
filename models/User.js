@@ -1,6 +1,11 @@
-// - Name - Email - Password - Roles - AccountStatus
+/**
+ * - Name
+ * - Email
+ * - Password
+ * - Roles
+ * - AccountStatus
+ */
 const { model, Schema } = require("mongoose");
-const bcrypt = require("bcryptjs");
 
 const userSchema = new Schema({
 	name: {
@@ -26,15 +31,7 @@ const userSchema = new Schema({
 	password: {
 		type: String,
 		required: [true, "You must enter a password."],
-		validate: {
-			validator: function (v) {
-				return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(
-					v
-				);
-			},
-			message:
-				"Your password must contain Minimum 8 characters, at least one uppercase letter, one lowercase letter, one number and one special character",
-		},
+		minlength: [6, "Your password must contain Minimum 6 characters"],
 	},
 	roles: {
 		type: [String],
@@ -46,15 +43,6 @@ const userSchema = new Schema({
 		enum: ["Pending", "Active", "Rejected"],
 		default: "Pending",
 	},
-});
-
-userSchema.pre("save", async function (next) {
-	// check if this is the first time or not
-	if (!this.isModified("password")) return next();
-	const salt = await bcrypt.genSalt(10);
-	const hash = await bcrypt.hash(this.password, salt);
-	this.password = hash;
-	next();
 });
 
 const User = model("User", userSchema);

@@ -1,10 +1,10 @@
-const { registerService, loginService } = require("../service/auth");
+const authService = require("../service/auth");
 
 /**
  * Req, res will handle by controllers
  */
 
-const registerController = async (req, res, next) => {
+const register = async (req, res, next) => {
 	const { name, email, password, roles, accountStatus } = req.body;
 	// simple validation
 	if (!name || !email || !password) {
@@ -12,17 +12,18 @@ const registerController = async (req, res, next) => {
 	}
 
 	try {
-		const user = await registerService({ name, email, password });
+		const user = await authService.register({ name, email, password });
 		res.status(201).json({ message: "User registered successfully.", user });
 	} catch (err) {
 		next(err);
+		console.log(err);
 	}
 };
 
-const loginController = async (req, res, next) => {
+const login = async (req, res, next) => {
 	const { email, password } = req.body;
 	try {
-		const token = await loginService({ email, password });
+		const token = await authService.login({ email, password });
 		res.status(200).json({ message: "Login successfully", token });
 	} catch (error) {
 		next(error);
@@ -30,6 +31,6 @@ const loginController = async (req, res, next) => {
 };
 
 module.exports = {
-	registerController,
-	loginController,
+	register,
+	login,
 };

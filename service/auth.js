@@ -1,37 +1,43 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const error = require("../utils/errors");
-const { findUserByProperty, createNewUser } = require("./user");
+const userService = require("./user");
 
 /**
  * Work with business logic, calculations and anything else
  */
 
-const registerService = async ({ name, email, password }) => {
-	let user = await findUserByProperty("email", email);
+const register = async ({ name, email, password, roles, accountStatus }) => {
+	let user = await userService.findUserByProperty("email", email);
 	if (user) {
 		throw error("User already registered before", 400);
-		return res.status(400).json({ message: "User already registered before" });
 	}
 
-	user = await createNewUser({ name, email, password });
+	const salt = await bcrypt.genSalt(10);
+	const hash = await bcrypt.hash(password, salt);
+
+	user = await userService.createNewUser({
+		name,
+		email,
+		password: hash,
+		roles,
+		accountStatus,
+	});
 	// Hash user password in schema model
 	delete user._doc.password;
 
 	return user;
 };
 
-const loginService = async ({ email, password }) => {
-	const user = await findUserByProperty("email", email);
+const login = async ({ email, password }) => {
+	const user = await userService.findUserByProperty("email", email);
 	if (!user) {
 		throw error("Invalid credential", 400);
-		return res.status(400).json({ message: "Invalid credential" });
 	}
 
 	const isValidPassword = await bcrypt.compare(password, user.password);
 	if (!isValidPassword) {
 		throw error("Invalid credential", 400);
-		return res.status(400).json({ message: "Invalid credential" });
 	}
 
 	delete user._doc.password;
@@ -52,6 +58,6 @@ const loginService = async ({ email, password }) => {
 };
 
 module.exports = {
-	registerService,
-	loginService,
+	register,
+	login,
 };
